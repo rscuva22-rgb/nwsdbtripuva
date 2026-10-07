@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NWSDB MCQ Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#10303f;--mute:#5d7885;--bg:#e6f1f4;--card:#fff;--line:#c9dde4;--main:#0a6a8a;--main-d:#07506a;--ok:#1f8a5b;--warn:#d9822b;--bad:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg);color:var(--ink);font-family:"Noto Sans Sinhala","Iskoola Pota",system-ui,sans-serif;line-height:1.6}
+.card{width:100%;max-width:640px;background:var(--card);border-radius:14px;padding:26px 24px;box-shadow:0 8px 30px rgba(10,60,80,.12);border-top:6px solid var(--main)}
+h1{font-size:1.35rem;margin:0 0 4px}
+p.sub{margin:0 0 18px;color:var(--mute);font-size:.92rem}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:.95rem}
+input{width:100%;padding:12px 14px;font:inherit;border:2px solid var(--line);border-radius:10px;outline:none}
+input:focus{border-color:var(--main)}
+input.err{border-color:var(--bad)}
+.msg{color:var(--bad);font-size:.88rem;min-height:1.2em;margin-top:10px}
+.btn{width:100%;margin-top:14px;padding:13px;font:inherit;font-weight:700;color:#fff;background:var(--main);border:0;border-radius:10px;cursor:pointer}
+.btn:hover,.btn:focus-visible{background:var(--main-d)}
+.btn:disabled{opacity:.6;cursor:default}
+.info{margin:16px 0 0;padding-left:20px;color:var(--mute);font-size:.9rem}
+.hide{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:var(--mute);font-weight:600}
+.sec{font-variant-numeric:tabular-nums;color:var(--main);font-size:1.15rem;font-weight:700}
+.sec.low{color:var(--bad)}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0 20px}
+.bar>i{display:block;height:100%;width:100%;background:var(--main)}
+.bar>i.mid{background:var(--warn)}.bar>i.low{background:var(--bad)}
+.q{font-size:1.08rem;font-weight:600;margin:0 0 16px}
+.opt{display:flex;gap:12px;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--bg);color:var(--main);display:grid;place-items:center;font-size:.85rem}
+.opt:hover,.opt:focus-visible{border-color:var(--main);background:#f2fafc;outline:none}
+.opt.sel{border-color:var(--main);background:#dff1f6}
+.opt.sel b{background:var(--main);color:#fff}
+.opt:disabled{cursor:default}
+.score{font-size:3rem;font-weight:700;color:var(--main);margin:6px 0 0;line-height:1.1}
+.stats{display:flex;gap:10px;margin:14px 0}
+.stats div{flex:1;background:var(--bg);border-radius:10px;padding:10px;text-align:center;font-size:.85rem;color:var(--mute)}
+.stats strong{display:block;font-size:1.25rem;color:var(--ink)}
+.status{padding:10px 12px;border-radius:10px;font-size:.9rem;margin-top:8px}
+.status.ok{background:#e1f5ec;color:var(--ok)}.status.wait{background:#fff3e0;color:#9a5a10}.status.fail{background:#fbe5e2;color:var(--bad)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="card">
+
+<section id="reg">
+  <h1>NWSDB බහුවරණ ප්‍රශ්නාවලිය</h1>
+  <p class="sub">ප්‍රශ්න 35 · එක් ප්‍රශ්නයකට තත්පර 20 · එක් ලකුණක් බැගින්</p>
+  <label for="name">සම්පූර්ණ නම</label>
+  <input id="name" autocomplete="name" placeholder="ඔබගේ සම්පූර්ණ නම">
+  <label for="seat">බස් අසුන / පත්‍රිකා අංකය</label>
+  <input id="seat" inputmode="text" placeholder="උදා: 14">
+  <div class="msg" id="regMsg"></div>
+  <button class="btn" id="startBtn">ප්‍රශ්නාවලිය අරඹන්න</button>
+  <ul class="info"><li>කාලය අවසන් වූ විට ප්‍රශ්නය පිළිතුරු නොදුන් ලෙස සටහන් වී ඊළඟ ප්‍රශ්නයට යයි.</li><li>පිළිතුරක් තේරූ පසු එය වෙනස් කළ නොහැක.</li></ul>
+</section>
+
+<section id="quiz" class="hide">
+  <div class="top"><span id="count"></span><span class="sec" id="sec">20</span></div>
+  <div class="bar"><i id="fill"></i></div>
+  <p class="q" id="qText"></p>
+  <div id="opts"></div>
+</section>
+
+<section id="done" class="hide">
+  <h1 id="doneName"></h1>
+  <p class="sub" id="doneSeat"></p>
+  <div class="score" id="scoreBig"></div>
+  <div class="stats">
+    <div><strong id="stOk">0</strong>නිවැරදි</div>
+    <div><strong id="stBad">0</strong>වැරදි</div>
+    <div><strong id="stTo">0</strong>කාලය අවසන්</div>
+  </div>
+  <div class="status wait" id="status"></div>
+  <button class="btn hide" id="retryBtn">නැවත යවන්න</button>
+</section>
+
+</main>
+
+<script>
+// ====== CONFIG ======
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2Lurc7Rmu4p-8PzLwRpU5sMANFmfE2JAORdQ4PLOstbRm_WOiXYc1NTogHHVjLIBH/exec"; // Apps Script Web App URL (ends with /exec)
+const TIME_LIMIT = 20; // seconds per question
+
+// [question, [A,B,C,D], correctIndex]
+const QUESTIONS = [
+["ජාතික ජල සම්පාදන හා ජලාපවහන මණ්ඩලය (NWSDB) ව්‍යවස්ථාපිත මණ්ඩලයක් ලෙස පිහිටුවන ලද පාර්ලිමේන්තු පනත කුමක්ද?",["1965 අංක 12 දරන පනත","1974 අංක 2 දරන පනත","1980 අංක 18 දරන පනත","1992 අංක 4 දරන පනත"],1],
+["ජල කාන්දු, නල කැඩීම් හා ජල සැපයුම් පිළිබඳ පැමිණිලි සඳහා වන NWSDB පැය 24 ක්‍රියාත්මක දුරකථන අංකය කුමක්ද?",["1919","1939","1920","1990"],1],
+["ශ්‍රී ලංකාවේ පානීය ජලයේ භෞතික, රසායනික හා ක්ෂුද්‍රජීවී ප්‍රමිතීන් නියම කර ඇති ශ්‍රී ලංකා ප්‍රමිති (SLS) අංකය කුමක්ද?",["SLS 522","SLS 614","SLS 735","SLS 107"],1],
+["ජල සම්පාදන පද්ධතියක \"Non-Revenue Water (NRW)\" යන්නෙන් අදහස් කරන්නේ කුමක්ද?",["ගෘහස්ථ නොවන වාණිජ ජල පරිභෝජනය","සම්පූර්ණයෙන් නොමිලේ බෙදාහරින සහනාධාර ජලය","නිෂ්පාදනය කර බෙදාහළ නමුත් බිල්පත් කර ආදායම් නොලැබෙන ජලය","පිරිසිදු කිරීම සඳහා භාවිත කරන ජල ප්‍රමාණය"],2],
+["කොළඹ අගනුවරට සහ ඒ ආසන්න ප්‍රදේශවලට පානීය ජලය වැඩිම ප්‍රමාණයක් සපයන ප්‍රධාන ජල පවිත්‍රාගාරය කුමක්ද?",["අඹතලේ ජල පවිත්‍රාගාරය","ලබුගම ජල පවිත්‍රාගාරය","කලාවැව ජල පවිත්‍රාගාරය","කඳාන ජල පවිත්‍රාගාරය"],0],
+["ජල බෙදාහැරීමේ ජාලයක \"District Metered Area (DMA)\" ස්ථාපිත කිරීමේ ප්‍රධාන ඉංජිනේරු අරමුණ කුමක්ද?",["ජල ගාස්තු ගණනය කිරීම","නල කාන්දු හඳුනාගෙන ජල හානි පාලනය කිරීම","ජලයට ක්ලෝරීන් මිශ්‍ර කිරීම","ප්‍රදේශයේ නව පාරිභෝගික සම්බන්ධතා ලබාදීම"],1],
+["NWSDB ප්‍රධාන කාර්යාලය පිහිටා ඇත්තේ කුමන ස්ථානයේද?",["කොළඹ කොටුව","රත්මලාන","බතරමුල්ල","පැලියගොඩ"],1],
+["NWSDB පාරිභෝගිකයන්ට ගෙවීම් කිරීමට හා ජල මාපක කියවීම් දැනුම් දීමට හඳුන්වා දී ඇති ජංගම යෙදුම කුමක්ද?",["Water Care Mobile","NWSDB SelfCare App","Lanka Water Portal","Aqua Pay SL"],1],
+["ශ්‍රී ලංකාවේ වියළි කලාපයේ CKDu වකුගඩු රෝගය පාලනය සඳහා ජල මණ්ඩලය ස්ථාපිත කළ ප්‍රධාන ප්‍රජා ජල පවිත්‍රකරණ තාක්ෂණය කුමක්ද?",["සෙමින් ගලන වැලි පෙරහන් (Slow Sand Filters)","ප්‍රතිලෝම ආස්‍රැතිය (Reverse Osmosis) ක්‍රමය","ලෝහ ඉවත් කිරීමේ පෙරහන්","පාරජම්බුල (UV) ක්ෂුද්‍රජීවීනාශක"],1],
+["සාමාන්‍ය වායුගෝලීය පීඩනය යටතේ ජලයේ උපරිම ඝනත්වය වාර්තා වන්නේ කුමන උෂ්ණත්වයේදීද?",["0°C","4°C","10°C","100°C"],1],
+["ජල පවිත්‍රාගාරයක ජලයේ බොර ගතිය (Turbidity) මැනීමට භාවිත කරන ප්‍රමිත ඒකකය කුමක්ද?",["Hazen Units","NTU (Nephelometric Turbidity Units)","mg/L (Milligrams per liter)","μS/cm (Micro-siemens)"],1],
+["අපවිත්‍ර ජලයේ බොර ගතිය අවම කිරීමට අවශ්‍ය කැටි ගැසීමේ (Coagulant) රසායන මාත්‍රාව නිර්ණය කිරීමට සිදු කරන පරීක්ෂණය කුමක්ද?",["ජාර් පරීක්ෂාව (Jar Test)","ක්ෂුද්‍රජීවී පරීක්ෂාව","ටයිට්‍රේෂන් පරීක්ෂාව","ද්‍යුත් සන්නායකතා පරීක්ෂාව"],0],
+["ජලයේ තාවකාලික කඨිනත්වය (Temporary Hardness) ඇතිවීමට ප්‍රධාන වශයෙන් හේතු වන ලවණය කුමක්ද?",["කැල්සියම් සල්ෆේට්","කැල්සියම් බයිකාබනේට්","මැග්නීසියම් ක්ලෝරයිඩ්","සෝඩියම් කාබනේට්"],1],
+["පානීය ජලයේ මල අපවිත්‍රණය හඳුනාගැනීමට පරීක්ෂා කරන ප්‍රධාන දර්ශක ජීවියා කුමක්ද?",["යීස්ට් (Yeast)","කෝලිෆෝම් බැක්ටීරියා (E. coli)","ඇල්ගී සෛල","පරපෝෂිතයා"],1],
+["නල පද්ධතිය තුළ ජලය ගමන් කිරීමේදී අවම අවශේෂ ක්ලෝරීන් (Free Residual Chlorine) මට්ටමක් පවත්වා ගන්නේ ඇයි?",["ජලයේ රසය හා පැහැය වැඩි කිරීමට","නල ජාලය තුළ නැවත ක්ෂුද්‍රජීවී වර්ධනය සිදුවීම වැළැක්වීමට","ජලයේ pH අගය 9.0 ට වඩා වැඩි කිරීමට","නල මලකඩ කෑම සම්පූර්ණයෙන් නැවැත්වීමට"],1],
+["ජල අණුවේ (H₂O) හයිඩ්‍රජන්-ඔක්සිජන්-හයිඩ්‍රජන් පරමාණු අතර පවතින බන්ධන කෝණය ආසන්න වශයෙන් කොපමණද?",["90.0°","104.5°","120.0°","180.0°"],1],
+["ක්ලෝරීන් ක්ෂුද්‍රජීවීනාශකය ජලයේ ඇති ස්වාභාවික කාබනික ද්‍රව්‍ය (NOM) සමඟ ප්‍රතික්‍රියා කිරීමෙන් සෑදෙන අහිතකර අතුරු ඵලය කුමක්ද?",["හයිඩ්‍රොක්ලෝරික් අම්ලය","ට්‍රයිහැලෝමීතේන් (THMs)","පොටෑසියම් පර්මැංගනේට්","කැල්සියම් හයිපොක්ලෝරයිට්"],1],
+["සාම්ප්‍රදායික මතුපිට ජල පවිත්‍රකරණ පද්ධතියක (Surface Water Treatment) අනුගමනය කරන නිවැරදි පියවර අනුපිළිවෙල කුමක්ද?",["පෙරීම → අවසාදනය → ක්ලෝරීනීකරණය → කැටි ගැසීම","කැටි ගැසීම → පොකුරු ගැසීම → අවසාදනය → පෙරීම → විෂබීජහරණය","අවසාදනය → ක්ලෝරීනීකරණය → පෙරීම → කැටි ගැසීම","පොකුරු ගැසීම → විෂබීජහරණය → අවසාදනය → පෙරීම"],1],
+["ජල නල මාර්ගයක කපාටයක් හදිසියේ වැසීමෙන් ඇතිවන අධි පීඩන තරංගය හඳුන්වන්නේ කුමන නමින්ද?",["Cavitation (කුහරණය)","Water Hammer (ජල මුගුරු පහර)","Venturi Effect","Surge Backflow"],1],
+["කඳුකර ප්‍රදේශ හරහා ගමන් කරන ගුරුත්වාකර්ෂණ ජල සම්පාදන නල මාර්ගවල අධික පීඩනය අඩු කිරීමට ඉදිකරන ව්‍යුහය කුමක්ද?",["පීඩන බිඳින ටැංකිය (Break Pressure Tank - BPT)","උස් ජල ටැංකිය (Overhead Tower)","අවසාදන ළිඳ (Sedimentation Sump)","පීඩන වර්ධක පොම්පාගාරය (Booster Pump Station)"],0],
+["ජල සම්පාදන සම්ප්‍රේෂණ නල මාර්ගවල උච්ච ස්ථානවල (High Points) ස්ථාපිත කරන කපාට වර්ගය කුමක්ද?",["පාලක කපාට (Sluice Valves)","වායු මුදාහැරීමේ කපාට (Air Release Valves)","ආපසු නොඑන කපාට (Non-Return Valves)","මඩ ඉවත් කිරීමේ කපාට (Scour Valves)"],1],
+["වේගවත් වැලි පෙරහන්වල (Rapid Sand Filters) පීඩන හානිය (Head loss) උපරිම මට්ටමට පැමිණි විට සිදු කරන ක්‍රියාවලිය කුමක්ද?",["වැලි තට්ටුව ඉවත් කර අලුත් වැලි දැමීම","ජලය සහ සම්පීඩිත වාතය යොදා පිටුපසට සේදීම (Backwashing)","අධික සාන්ද්‍ර අපිරිසිදු ජලය යැවීම","පෙරහන රසායනිකව පිරිසිදු කිරීම"],1],
+["රූ අවසාදන ටැංකිවල අංශු ගුරුත්වය යටතේ තැන්පත් වීමේ ප්‍රවේගය නිර්ණය කරන භෞතික නියමය කුමක්ද?",["බර්නූලි මූලධර්මය (Bernoulli's Principle)","ස්ටෝක්ස් නියමය (Stokes' Law)","පාස්කල් නියමය (Pascal's Law)","ඩාර්සි නියමය (Darcy's Law)"],1],
+["පෘථිවියේ ඇති මුළු ජල ප්‍රමාණයෙන් මිනිසාට සෘජුවම පරිභෝජනය කළ හැකි ප්‍රතිශතය කොපමණද?",["25% පමණ","1% කට වඩා අඩු ප්‍රමාණයක්","10% පමණ","3.5% පමණ"],1],
+["ජලයේ ඇති අහිතකර ගඳ, රසය සහ ඇතැම් කෘෂි රසායන ඉවත් කිරීමට යොදන ද්‍රව්‍යය කුමක්ද?",["ජලීය හුණු (Hydrated Lime)","සක්‍රිය කළ කාබන් (Activated Carbon)","ඇලම් (Alum)","සෝඩියම් ක්ලෝරයිඩ්"],1],
+["ශ්‍රී ලංකාවේ දිගම ගඟ වන මහවැලි ගඟේ දිග ආසන්න වශයෙන් කිලෝමීටර කොපමණද?",["285 km","335 km","390 km","425 km"],1],
+["එක්සත් ජාතීන්ගේ සංවිධානය (UN) නම් කරන ලද \"ලෝක ජල දිනය\" (World Water Day) යෙදෙන්නේ කවදාද?",["පෙබරවාරි 2","මාර්තු 22","අප්‍රේල් 22","ජූනි 5"],1],
+["ලොව ගැඹුරුම වන අතර ලොව මිරිදිය ප්‍රමාණයෙන් විශාල කොටසක් අඩංගු වන විල කුමක්ද?",["සුපීරියර් විල (Lake Superior)","බෙයිකල් විල (Lake Baikal)","වික්ටෝරියා විල (Lake Victoria)","කැස්පියන් මුහුද (Caspian Sea)"],1],
+["ශ්‍රී ලංකාවේ සාගරයට ගලා බසින ගංගා ද්‍රෝණි (River Basins) සංඛ්‍යාව කොපමණද?",["84 ක්","98 ක්","103 ක්","124 ක්"],2],
+["පානීය ජලයේ pH අගය පිළිබඳ ශ්‍රී ලංකා ප්‍රමිතිය (SLS 614) අනුව අවශ්‍ය කර ඇති සාමාන්‍ය පරාසය කුමක්ද?",["5.5 – 7.0","6.0 – 8.0","6.5 – 8.5","7.5 – 9.5"],2],
+["ජලයේ ද්‍යුත් සන්නායකතාව (Electrical Conductivity) වැඩි වීමට සෘජුවම බලපාන ප්‍රධාන සාධකය කුමක්ද?",["දියවී ඇති ඝන ද්‍රව්‍ය හා අයන ප්‍රමාණය (TDS)","ජලයේ දියවී ඇති ඔක්සිජන් ප්‍රමාණය (DO)","ජලයේ උෂ්ණත්වය වේගයෙන් පහත වැටීම","ජලයේ පෘෂ්ඨික ආතතිය වැඩි වීම"],0],
+["වැසි ජලය රැස් කිරීමේ පද්ධතියක වහලයේ ඇති අපද්‍රව්‍ය පෙරහනට යාමට පෙර ජලය ඉවත් කරන උපකරණය කුමක්ද?",["වැලි පෙරහන (Sand Filter)","පළමු වැසි ධාරා අපසාරකය (First Flush Diverter)","කාබන් පෙරහන (Carbon Filter)","පාරජම්බුල ඒකකය"],1],
+["මිරිදිය ජලයට වඩා ලවණතාව වැඩි නමුත් සාමාන්‍ය මුහුදු ජලයට වඩා ලවණතාව අඩු ජලය හඳුන්වන්නේ කුමන නමින්ද?",["මිරිදිය (Freshwater)","කළපු ජලය (Brackish water)","ඛනිජ ජලය (Mineral water)","ආස්‍රැත ජලය (Distilled water)"],1],
+["ශ්‍රී ලංකාවේ විශාලතම ජල ධාරිතාව (පරිමාව අනුව) සහිතව ඉදිකරන ලද ජලාශය කුමක්ද?",["පරාක්‍රම සමුද්‍රය","සේනානායක සමුද්‍රය (ඉංගිනියාගල)","රන්දෙණිගල ජලාශය","කොත්මලේ ජලාශය"],1],
+["ජල චක්‍රයේදී ශාකවල පත්‍රවල ඇති පත්‍ර රන්ධ්‍ර හරහා ජලය වාෂ්ප ලෙස වායුගෝලයට මුදාහැරීමේ ක්‍රියාවලිය කුමක්ද?",["වාෂ්පීකරණය (Evaporation)","උත්ස්වේදනය (Transpiration)","ඝනීභවනය (Condensation)","රිංගීම (Infiltration)"],1]
+];
+// Note: question 4 (index 3) onward answers follow the official key; Q29-30 = C, Q31 = A, Q12 = A, Q5 = A, Q20 = A.
+
+// ====== STATE ======
+const $ = id => document.getElementById(id);
+const L = ["A","B","C","D"];
+let user = {}, idx = 0, log = [], t0 = 0, tick = null, locked = false, payload = null;
+
+// ====== REGISTRATION ======
+$("startBtn").onclick = () => {
+  const name = $("name").value.trim(), seat = $("seat").value.trim();
+  $("name").classList.toggle("err", !name);
+  $("seat").classList.toggle("err", !seat);
+  if (!name || !seat) { $("regMsg").textContent = "නම සහ අසුන් අංකය යන දෙකම පුරවන්න."; return; }
+  if (name.length < 3) { $("regMsg").textContent = "කරුණාකර සම්පූර්ණ නම ඇතුළත් කරන්න."; return; }
+  user = { name, seat };
+  $("reg").classList.add("hide"); $("quiz").classList.remove("hide");
+  showQ();
+};
+["name","seat"].forEach(i => $(i).addEventListener("keydown", e => { if (e.key === "Enter") $("startBtn").click(); }));
+
+// ====== QUIZ ======
+function showQ() {
+  locked = false;
+  const [q, opts] = QUESTIONS[idx];
+  $("count").textContent = `ප්‍රශ්නය ${idx + 1} / ${QUESTIONS.length}`;
+  $("qText").textContent = `${idx + 1}. ${q}`;
+  $("opts").innerHTML = "";
+  opts.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<b>${L[i]}</b><span></span>`;
+    b.lastChild.textContent = o;
+    b.onclick = () => choose(i, b);
+    $("opts").appendChild(b);
+  });
+  t0 = Date.now();
+  clearInterval(tick);
+  tick = setInterval(update, 100);
+  update();
+}
+
+function update() {
+  const left = Math.max(0, TIME_LIMIT - (Date.now() - t0) / 1000);
+  $("fill").style.width = (left / TIME_LIMIT * 100) + "%";
+  $("fill").className = left <= 5 ? "low" : left <= 10 ? "mid" : "";
+  $("sec").textContent = Math.ceil(left);
+  $("sec").classList.toggle("low", left <= 5);
+  if (left <= 0) record(null, null);
+}
+
+function choose(i, btn) {
+  if (locked) return;
+  btn.classList.add("sel");
+  record(i, btn);
+}
+
+function record(sel, btn) {
+  if (locked) return;
+  locked = true;
+  clearInterval(tick);
+  document.querySelectorAll(".opt").forEach(b => b.disabled = true);
+  const correct = QUESTIONS[idx][2];
+  log.push({
+    q: idx + 1,
+    selected: sel === null ? "" : L[sel],
+    correct: L[correct],
+    status: sel === null ? "timeout" : (sel === correct ? "correct" : "wrong"),
+    seconds: Math.min(TIME_LIMIT, +((Date.now() - t0) / 1000).toFixed(1))
+  });
+  setTimeout(() => { idx++; idx < QUESTIONS.length ? showQ() : finish(); }, sel === null ? 300 : 450);
+}
+
+// ====== FINISH + SUBMIT ======
+function finish() {
+  const ok = log.filter(a => a.status === "correct").length;
+  const to = log.filter(a => a.status === "timeout").length;
+  payload = {
+    name: user.name, seat: user.seat,
+    score: ok, total: QUESTIONS.length,
+    correct: ok, wrong: log.length - ok - to, timedOut: to,
+    submittedAt: new Date().toISOString(),
+    log
+  };
+  $("quiz").classList.add("hide"); $("done").classList.remove("hide");
+  $("doneName").textContent = user.name;
+  $("doneSeat").textContent = "අසුන් / පත්‍රිකා අංකය: " + user.seat;
+  $("scoreBig").textContent = `${ok} / ${QUESTIONS.length}`;
+  $("stOk").textContent = ok; $("stBad").textContent = payload.wrong; $("stTo").textContent = to;
+  submit();
+}
+
+async function submit() {
+  const st = $("status"), rb = $("retryBtn");
+  rb.classList.add("hide");
+  st.className = "status wait"; st.textContent = "ප්‍රතිඵල යවමින්...";
+  if (!SCRIPT_URL || SCRIPT_URL.startsWith("PASTE_")) {
+    st.className = "status fail"; st.textContent = "SCRIPT_URL සකසා නැත. ප්‍රතිඵල යැවුණේ නැත.";
+    return;
+  }
+  try {
+    // text/plain avoids a CORS preflight, which Apps Script cannot answer
+    await fetch(SCRIPT_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    st.className = "status ok"; st.textContent = "ප්‍රතිඵල සාර්ථකව යවන ලදී. ස්තූතියි!";
+  } catch (e) {
+    st.className = "status fail"; st.textContent = "යැවීම අසාර්ථකයි. අන්තර්ජාලය පරීක්ෂා කර නැවත උත්සාහ කරන්න.";
+    rb.classList.remove("hide");
+  }
+}
+$("retryBtn").onclick = submit;
+</script>
+</body>
+</html>
